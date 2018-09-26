@@ -2,6 +2,15 @@
 title: "p8105_hw2_jl5297"
 author: "JunLu"
 date: "9/25/2018"
-output: html_document
+output: github_document
 ---
+## Executive Summary
+This my second homework for Data Science, including my solutions to Problems 1, 2 and 3. And I was praciticing data wrangling through this homework.
+
+## Load Packages
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+```
+
+
 
