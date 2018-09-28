@@ -10,6 +10,7 @@ This my second homework for Data Science, including my solutions to Problems 1, 
 ## Load Packages
 ```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
+library(readxl)
 ```
 
 ## Problem 1
@@ -24,7 +25,7 @@ nyc =
     select(line:entry, vending, ada) %>% 
     mutate(entry = ifelse(entry == "YES", T, F))
 
-nyc
+head(nyc)
 ```
 The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served(route number and route name), entry, vending, entrance type, and ADA compliance. I load the data, clean the varibales name, select needed variables and convert the entry variable from character (YES vs NO) to a logical variable. This data set have `r nrow(nyc)` rows and `r ncol(nyc)` columns. These data is not tidy, because there are variables in columns' names. And I think it should add a column to tell which entrance it is because it is quite confusing now.
 
@@ -53,7 +54,7 @@ The proportion of station entrances / exits without vending allow entrance is ab
      
      
 ### 3. Reformat data
-Reformat data so that route number and route name are distinct variables. After reforming, I delete the line with NA in route name to make this data set more tidy.
+Reformat data so that route number and route name are distinct variables. After reforming, I delete the line with NA in route name to make this dataset more tidy.
 ```{r}
 nyc_reform = nyc %>% 
     gather(key = route_number, value = route_name, route1:route11) %>% 
@@ -61,7 +62,7 @@ nyc_reform = nyc %>%
     filter(!is.na(route_name)) %>%  
     arrange(line, station_name)
 
-nyc_reform
+head(nyc_reform)
 ```
 
 ### 4. Solutions to questions
@@ -77,6 +78,68 @@ There 60 distinct stations which serve the A train.
 nyc_reform_unique %>% filter(route_name == "A", ada == T) %>% nrow()
 ```
 There are 17 distinct stations which serve the A train and are ADA compliant.
+
+## Problem 2
+### 1. Read and clean data
+**a. Read and clean the Mr. Trash Wheel sheet.**
+```{r}
+trash = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+                   sheet = 1, range = "A2:N258") %>% 
+    janitor::clean_names() %>% 
+    rename(weight = weight_tons, volume = volume_cubic_yards) %>% 
+    filter(!is.na(dumpster)) %>% 
+    mutate(sports_balls = as.integer(round(sports_balls, 0)))
+
+head(trash)
+```
+
+**b. Read and clean precipitation data for 2017.**
+```{r}
+precip_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+                         sheet = 3, range = "A2:B14") %>%
+    janitor::clean_names() %>% 
+    rename(precipitation = total) %>% 
+    filter(!is.na(precipitation)) %>% 
+    mutate(year = "2017")
+```
+
+**c. Read and clean precipitation data for 2016.**
+```{r}
+precip_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+                         sheet = 4, range = "A2:B14") %>%
+    janitor::clean_names() %>% 
+    rename(precipitation = total) %>% 
+    filter(!is.na(precipitation)) %>% 
+    mutate(year = "2016")
+```
+
+**d. Combine datasets and convert month to a character variable**
+```{r}
+precip = bind_rows(precip_2016, precip_2017) %>% 
+    select(year, everything()) %>% 
+    mutate(month = month.name[month])
+head(precip)
+```
+??? give example of key varibales
+
+### 2. Solutions to questions
+**a. Total precipitation in 2017**
+```{r}
+precip_sum = precip %>% group_by(year) %>% summarise(sum(precipitation))
+precip_sum
+```
+Total precipitation in 2017 is 29.9.
+
+**b. The median number of sports balls in a dumpster in 2016**
+```{r}
+trash %>% filter(year == 2016) %>% summarise(median(sports_balls))
+    
+```
+The median number of sports balls in a dumpster in 2016 is 26.
+
+##
+
+
 
 
 
