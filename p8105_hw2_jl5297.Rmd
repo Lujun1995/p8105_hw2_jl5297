@@ -1,16 +1,86 @@
 ---
 title: "p8105_hw2_jl5297"
-author: "JunLu"
+author: "Jun Lu"
 date: "9/25/2018"
 output: github_document
 ---
 ## Executive Summary
-This my second homework for Data Science, including my solutions to Problems 1, 2 and 3. And I was praciticing data wrangling through this homework.
+This my second homework for Data Science, including my solutions to Problems 1, 2 and 3. And I was praciticing data wrangling and tidy data through this homework.
 
 ## Load Packages
 ```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
 ```
+
+## Problem 1
+This problem focuses on NYC Transit data; in particular, this CSV file contains information related to each entrance and exit for each subway station in NYC.    
+
+### 1. Read and clean the data
+Read and clean the NYC Transit data
+```{r, message=FALSE, warning=FALSE}
+nyc = 
+    read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+    janitor::clean_names() %>% 
+    select(line:entry, vending, ada) %>% 
+    mutate(entry = ifelse(entry == "YES", T, F))
+
+nyc
+```
+The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served(route number and route name), entry, vending, entrance type, and ADA compliance. I load the data, clean the varibales name, select needed variables and convert the entry variable from character (YES vs NO) to a logical variable. This data set have `r nrow(nyc)` rows and `r ncol(nyc)` columns. These data is not tidy, because there are variables in columns' names. And I think it should add a column to tell which entrance it is because it is quite confusing now.
+
+### 2. Solution to questions
+**a. Count distinct stations**
+```{r}
+nyc_unique = unique(nyc[c("line", "station_name", "ada")])
+nrow(nyc_unique)
+```
+There are 465 distinct stations.
+       
+       
+**b. Count stations which are ADA compliant**
+```{r}
+nyc_unique %>% filter(ada == T) %>% nrow()
+```
+There are 84 stations which are ADA compliant.
+     
+          
+**c. Calculate proportion of station entrances / exits without vending allow entrance**
+```{r}
+entran_num = nrow(nyc)
+nyc %>% filter(entry == T, vending == "NO") %>% nrow() / entran_num
+```
+The proportion of station entrances / exits without vending allow entrance is about 0.037
+     
+     
+### 3. Reformat data
+Reformat data so that route number and route name are distinct variables. After reforming, I delete the line with NA in route name to make this data set more tidy.
+```{r}
+nyc_reform = nyc %>% 
+    gather(key = route_number, value = route_name, route1:route11) %>% 
+    select(line, station_name, route_number, route_name, ada, everything()) %>%
+    filter(!is.na(route_name)) %>%  
+    arrange(line, station_name)
+
+nyc_reform
+```
+
+### 4. Solutions to questions
+**a. Count distinct stations which serve the A train**
+```{r}
+nyc_reform_unique = unique(nyc_reform[c("line", "station_name",  "route_name", "ada")])
+nyc_reform_unique %>% filter(route_name == "A") %>% nrow()
+```
+There 60 distinct stations which serve the A train.
+
+**b. Count how many distinct stations which serve the A train are ADA compliant**
+```{r}
+nyc_reform_unique %>% filter(route_name == "A", ada == T) %>% nrow()
+```
+There are 17 distinct stations which serve the A train and are ADA compliant.
+
+
+
+
 
 
 
