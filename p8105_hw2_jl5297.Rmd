@@ -4,6 +4,7 @@ author: "Jun Lu"
 date: "9/25/2018"
 output: github_document
 ---
+
 ## Executive Summary
 This my second homework for Data Science, including my solutions to Problems 1, 2 and 3. And I was praciticing data wrangling and tidy data through this homework.
 
@@ -26,7 +27,7 @@ nyc =
 
 nyc
 ```
-The "nyc_transit" dataset extracted data from  "NYC_Transit_Subway_Entrance_And_Exit_Data.csv" document. This dataset has `r nrow(nyc)` rows and `r ncol(nyc)` columns. There are `r nrow(nyc)` observations in this dataset. The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served(route number and route name), entry, vending, entrance type, and ADA compliance. 
+The "nyc_transit" dataset extracted data from  "NYC_Transit_Subway_Entrance_And_Exit_Data.csv" document. This dataset has `r nrow(nyc)` rows and `r ncol(nyc)` columns. There are `r nrow(nyc)` observations in this dataset. The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. 
       
 I load the data, clean the varibales name, select needed variables and convert the entry variable from character (YES vs NO) to a logical variable. These data are not tidy, because there are variables value in columns' names. And I think it should add a column to tell which entrance it is because it is quite confusing now.
 
@@ -48,10 +49,10 @@ There are 84 stations which are ADA compliant.
           
 **c. Calculate proportion of station entrances / exits without vending allow entrance**
 ```{r}
-entran_num = nrow(nyc)
-nyc %>% filter(vending == "NO") %>% nrow() / entran_num
+entran_withoutvending = nyc %>% filter(vending == "NO")
+mean(entran_withoutvending$entry)
 ```
-The proportion of station entrances / exits without vending allow entrance is about 0.098.
+The proportion of station entrances / exits without vending allow entrance is about 0.377.
      
      
 ### 3. Reform data
@@ -85,7 +86,7 @@ There are 17 distinct stations which serve the A train and are ADA compliant.
 **a. Read and clean the Mr. Trash Wheel sheet.**
 ```{r}
 trash = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
-                   sheet = 1, range = "A2:N258") %>% 
+                   sheet = 1, range = cell_cols("A:N")) %>% 
     janitor::clean_names() %>% 
     rename(weight = weight_tons, volume = volume_cubic_yards) %>% 
     filter(!is.na(dumpster)) %>% 
@@ -124,7 +125,7 @@ head(precip)
 ```
 
 ### 2. Describe the data
-The "trash"" dataset extracted data from sheet 1 of  "HealthyHarborWaterWheelTotals2017-9-26.xlsx". It has `r nrow(trash)` rows and `r ncol(trash)` columns. There are 215 observations in this dataset. And there are 14 variables in this dataset, including dumpster number, month, year, date, weight, volume, the number of a specific trash it collected and so on. For example, from the dataset we can know that on 2014-05-16 the dumpster 1 collected 1450 plastic bottles.
+The "trash"" dataset extracted data from sheet 1 of  "HealthyHarborWaterWheelTotals2017-9-26.xlsx". It has `r nrow(trash)` rows and `r ncol(trash)` columns. There are 216 observations in this dataset (I include the 362th row as it has a dumpster number). And there are 14 variables in this dataset, including dumpster number, month, year, date, weight, volume, the number of a specific trash it collected and so on. For example, from the dataset we can know that on 2014-05-16 the dumpster 1 collected 1450 plastic bottles.
    
    
 The "precip" dataset merged data from sheet 3 and sheet 4 of document "HealthyHarborWaterWheelTotals2017-9-26.xlsx". It has `r nrow(precip)` rows  and `r ncol(precip)` columns. There are `r nrow(precip)` observations and `r ncol(precip)` variables including year, month and total precipitation in this dataset. For example, from the dataset we can know that on in January 2016 it collected 3.23 total precipitation.
@@ -132,20 +133,20 @@ The "precip" dataset merged data from sheet 3 and sheet 4 of document "HealthyHa
 ### 3. Solutions to questions
 **a. Total precipitation in 2017**
 ```{r}
-precip_sum = precip %>% group_by(year) %>% summarise(sum(precipitation))
-precip_sum
+sum(precip_2017$precipitation)
 ```
-Total precipitation in 2017 is 29.9.
+Total precipitation in 2017 is 29.93.
 
 **b. The median number of sports balls in a dumpster in 2016**
 ```{r}
-trash %>% filter(year == 2016) %>% summarise(median(sports_balls))
+trash %>% filter(year == "2016") %>% summarise(median(sports_balls))
     
 ```
 The median number of sports balls in a dumpster in 2016 is 26.
 
 ## Problem 3
 ### 1. Load the data
+Need to install package p8105.datasets firstly on your computer.
 ```{r}
 library(p8105.datasets)
 data("brfss_smart2010")
@@ -197,8 +198,16 @@ The median of the “Excellent” response value is 23.6.
 ```{r, warning=FALSE, message=FALSE}
 brfss_tidy %>% 
     filter(year == 2002) %>% 
-    ggplot(aes(x = excellent)) + geom_histogram() 
-ggsave("histogra.jpg")
+    ggplot(aes(x = excellent)) + 
+    geom_histogram() +
+    labs(
+    title = "Histogram of “Excellent” response values in the year 2002",
+    x = '"Excellent" response values',
+    y = "Count",
+    caption = "Data from brfss_smart2010") +
+    theme_bw() 
+    
+ggsave("histogram.jpg")
 ```
 
 **d. Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County (both in NY State) in each year from 2002 to 2010.**
@@ -206,10 +215,17 @@ ggsave("histogra.jpg")
 brfss_tidy %>% 
     filter(locationdesc %in% c("NY - New York County", "NY - Queens County")) %>% 
     ggplot(aes(x = year, y = excellent, color = locationdesc)) +
-    geom_point(size = 3) + geom_line(alpha = 0.1) +
-    ylab("The proportion of “Excellent” response values -%") +
+    geom_point(size = 3) + 
+    geom_line(alpha = 0.1) +
+    labs(
+    x = "Year",
+    y = "The proportion of “Excellent” response values -(%)",
+    caption = "Data from brfss_smart2010") +
+    theme_bw() +
+    theme(legend.position = "bottom")
+    
 ggsave("scatterplot.jpg")
-```                                                                                                                                                                                                                             
+```                                                                                                                             
 
 
 
