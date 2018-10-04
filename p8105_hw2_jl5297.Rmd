@@ -27,9 +27,9 @@ nyc =
 
 nyc
 ```
-The "nyc_transit" dataset extracted data from  "NYC_Transit_Subway_Entrance_And_Exit_Data.csv" document. This dataset has `r nrow(nyc)` rows and `r ncol(nyc)` columns. There are `r nrow(nyc)` observations in this dataset. The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. 
+The "nyc_transit" dataset extracted data from  "NYC_Transit_Subway_Entrance_And_Exit_Data.csv" document. This dataset has `r nrow(nyc)` rows and `r ncol(nyc)` columns. There are `r nrow(nyc)` observations in this dataset. The nyc_transit dataset contains variables including line, station, name, station latitude / longitude, routes served(route 1-11), entry, vending, entrance type, and ADA compliance. 
       
-I load the data, clean the varibales name, select needed variables and convert the entry variable from character (YES vs NO) to a logical variable. These data are not tidy, because there are variables value in columns' names. And I think it should add a column to tell which entrance it is because it is quite confusing now.
+I load the data, clean the varibales name, select needed variables and convert the entry variable from character (YES vs NO) to a logical variable. These data are not tidy, because there are variables value in columns' names.
 
 ### 2. Solution to questions
 **a. Count distinct stations**
@@ -85,21 +85,21 @@ There are 17 distinct stations which serve the A train and are ADA compliant.
 ### 1. Read and clean data
 **a. Read and clean the Mr. Trash Wheel sheet.**
 ```{r}
-trash = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
+trash = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
                    sheet = 1, range = cell_cols("A:N")) %>% 
     janitor::clean_names() %>% 
     rename(weight = weight_tons, volume = volume_cubic_yards) %>% 
     filter(!is.na(dumpster)) %>% 
     mutate(sports_balls = as.integer(round(sports_balls, 0)))
 
-head(trash)
+trash
 ```
 
 
 **b. Read and clean precipitation data for 2017.**
 ```{r}
-precip_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
-                         sheet = 3, range = "A2:B14") %>%
+precip_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
+                         sheet = 4, range = "A2:B14") %>%
     janitor::clean_names() %>% 
     rename(precipitation = total) %>% 
     filter(!is.na(precipitation)) %>% 
@@ -108,8 +108,8 @@ precip_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
 
 **c. Read and clean precipitation data for 2016.**
 ```{r}
-precip_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
-                         sheet = 4, range = "A2:B14") %>%
+precip_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx",
+                         sheet = 5, range = "A2:B14") %>%
     janitor::clean_names() %>% 
     rename(precipitation = total) %>% 
     filter(!is.na(precipitation)) %>% 
@@ -121,21 +121,22 @@ precip_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx",
 precip = bind_rows(precip_2016, precip_2017) %>% 
     select(year, everything()) %>% 
     mutate(month = month.name[month])
-head(precip)
+
+precip
 ```
 
 ### 2. Describe the data
-The "trash"" dataset extracted data from sheet 1 of  "HealthyHarborWaterWheelTotals2017-9-26.xlsx". It has `r nrow(trash)` rows and `r ncol(trash)` columns. There are 216 observations in this dataset (I include the 362th row as it has a dumpster number). And there are 14 variables in this dataset, including dumpster number, month, year, date, weight, volume, the number of a specific trash it collected and so on. For example, from the dataset we can know that on 2014-05-16 the dumpster 1 collected 1450 plastic bottles.
+The "trash"" dataset extracted data from sheet 1 of  "HealthyHarborWaterWheelTotals2018-7-28.xlsx". It has `r nrow(trash)` rows and `r ncol(trash)` columns. There are `r nrow(trash)` observations in this dataset. And there are 14 variables in this dataset, including dumpster number, month, year, date, weight, volume, the number of a specific trash it collected and so on. For example, from the dataset we can know that on 2014-05-16 the dumpster 1 collected 1450 plastic bottles.
    
    
-The "precip" dataset merged data from sheet 3 and sheet 4 of document "HealthyHarborWaterWheelTotals2017-9-26.xlsx". It has `r nrow(precip)` rows  and `r ncol(precip)` columns. There are `r nrow(precip)` observations and `r ncol(precip)` variables including year, month and total precipitation in this dataset. For example, from the dataset we can know that on in January 2016 it collected 3.23 total precipitation.
+The "precip" dataset merged data from sheet 4 and sheet 5 of document "HealthyHarborWaterWheelTotals2018-7-28.xlsx". It has `r nrow(precip)` rows  and `r ncol(precip)` columns. There are `r nrow(precip)` observations and `r ncol(precip)` variables including year, month and total precipitation in this dataset. For example, from the dataset we can know that on in January 2016 it collected 3.23 total precipitation.
 
 ### 3. Solutions to questions
 **a. Total precipitation in 2017**
 ```{r}
 sum(precip_2017$precipitation)
 ```
-Total precipitation in 2017 is 29.93.
+Total precipitation in 2017 is 32.93.
 
 **b. The median number of sports balls in a dumpster in 2016**
 ```{r}
@@ -162,6 +163,7 @@ brfss_tidy =
     spread(key = response, value = data_value) %>% 
     janitor::clean_names() %>% 
     mutate(excellent_verygood_proportion = excellent + very_good) 
+
 brfss_tidy
 ```
 
@@ -226,8 +228,8 @@ brfss_tidy %>%
     
 ggsave("scatterplot.jpg")
 ```                                                                                                                             
-
-
+From this scatterplot, we can know that the proportion of 'Excellent' response of New York County is always higher than Queens County.
+ 
 
 
 
